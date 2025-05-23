@@ -6,4 +6,5 @@ interface HandleCodeResult {
 
 interface InputCliOptions {
   dir: string;
+  output: string;
 }

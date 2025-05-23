@@ -20,7 +20,7 @@ export const posixPath = (str: string): string => {
   return str;
 };
 
-export const normalizeDir = (str: string): string => {
+export const normalizePath = (str: string): string => {
   str = posixPath(str);
   if (str.endsWith('/')) {
     str = str.slice(0, -1);

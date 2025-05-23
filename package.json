@@ -16,6 +16,7 @@
     "@types/node": "22.15.19",
     "commander": "14.0.0",
     "htmlparser2": "10.0.0",
+    "log-update": "6.1.0",
     "magic-string": "0.30.17",
     "picocolors": "1.1.1",
     "tsx": "4.19.4",
