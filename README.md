@@ -1,6 +1,6 @@
 # i18n-ast-convert
 
-基于 AST 的国际化项目中文字符串代码提取替换工具
+基于 AST 的中文迁移国际化代码提取替换工具
 
 - 支持 js/ts/jsx/tsx/vue 文件
 
