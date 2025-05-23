@@ -1,0 +1,30 @@
+{
+  "name": "i18n-ast-convert",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "tsx src/main.ts"
+  },
+  "author": "lisonge",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/parser": "7.27.2",
+    "@babel/traverse": "7.27.1",
+    "@babel/types": "7.27.1",
+    "@types/babel__traverse": "7.20.7",
+    "@types/jsdom": "21.1.7",
+    "@types/node": "22.15.19",
+    "commander": "14.0.0",
+    "jsdom": "26.1.0",
+    "magic-string": "0.30.17",
+    "picocolors": "1.1.1",
+    "tsx": "4.19.4",
+    "typescript": "5.8.3",
+    "vue": "3.5.14"
+  },
+  "volta": {
+    "node": "22.15.1",
+    "pnpm": "10.11.0"
+  }
+}
