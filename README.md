@@ -11,3 +11,19 @@
 | `` `${a}个苹果和${b}个香蕉${c}` `` | `{0}个苹果和${1}个香蕉${2}` | `$t('key', [a, b, c])`       |
 | `a+'个苹果和'+b+'个香蕉'+c`        | `{0}个苹果和${1}个香蕉${2}` | `$t('key', [a, b, c])`       |
 | `<div title="苹果" />`             | `苹果`                      | `<div :title="$t('key')" />` |
+
+## 使用
+
+安装
+
+```shell
+git clone https://github.com/lisonge/i18n-ast-convert.git
+cd i18n-ast-convert
+pnpm i
+```
+
+运行
+
+```shell
+pnpm start -d your-project-path
+```
