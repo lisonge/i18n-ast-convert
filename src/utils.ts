@@ -1,9 +1,12 @@
+import type parser from '@babel/parser';
+import _traverse, { TraverseOptions } from '@babel/traverse';
+import t from '@babel/types';
+import type { ParentNode } from 'domhandler';
+import { DomUtils, parseDocument } from 'htmlparser2';
+import MagicString from 'magic-string';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type parser from '@babel/parser';
-import t from '@babel/types';
-import _traverse, { TraverseOptions } from '@babel/traverse';
-import { zhReg } from './config';
+import { htmlRegList, zhReg } from './config';
 const traverse: typeof _traverse = Reflect.get(_traverse, 'default');
 
 const spritReg = /\/{2,}/g;
@@ -252,4 +255,111 @@ export const takeWhile = <T>(
     i++;
   }
   return result;
+};
+
+const safeRun = <T>(fn: () => T): T | undefined => {
+  try {
+    return fn();
+  } catch (e) {
+    return undefined;
+  }
+};
+
+const isHtmlText = (str: string): boolean => {
+  if (!str) return false;
+  return htmlRegList.some((v) => str.match(v));
+};
+
+function* traverseHtml2Node(node: ParentNode) {
+  const stack = node.children.toReversed();
+  while (stack.length) {
+    const child = stack.pop()!;
+    yield child;
+    if (DomUtils.hasChildren(child)) {
+      stack.push(...child.children.toReversed());
+    }
+  }
+}
+
+export const handleStringInnerHtml = (
+  content: string,
+  program: parser.ParseResult<t.File>
+): string | undefined => {
+  const nodes: (t.StringLiteral | t.TemplateLiteral)[] = [];
+  const usedNodes = new Set<t.TemplateElement>();
+  const templateNodes: t.TemplateElement[] = [];
+  traverse(program, {
+    StringLiteral(p) {
+      if (!hasZh(p.node.value)) return;
+      if (!isHtmlText(p.node.value)) return;
+      nodes.push(p.node);
+    },
+    TemplateElement(p) {
+      if (usedNodes.has(p.node)) return;
+      if (!hasZh(p.node.value.raw)) return;
+      if (!isHtmlText(p.node.value.raw)) return;
+      templateNodes.push(p.node);
+    },
+    TemplateLiteral(p) {
+      if (p.node.expressions.length) return;
+      const node = p.node.quasis[0];
+      if (!hasZh(node.value.raw)) return;
+      if (!isHtmlText(node.value.raw)) return;
+      nodes.push(p.node);
+      usedNodes.add(p.node.quasis[0]);
+    },
+    ...skipTraverseTsOpts,
+  });
+  if (nodes.length === 0 && templateNodes.length === 0) return;
+  const ms = new MagicString(content);
+  let flag = Boolean(false);
+  nodes.forEach((node) => {
+    const nodeContent = t.isStringLiteral(node)
+      ? node.value
+      : node.quasis[0].value.raw;
+    const doc = safeRun(() =>
+      parseDocument(nodeContent, {
+        withStartIndices: true,
+        withEndIndices: true,
+      })
+    );
+    if (!doc) return;
+    const quote = content[node.start!];
+    const offset = node.start! + 1;
+    for (const child of traverseHtml2Node(doc)) {
+      if (!DomUtils.isText(child)) continue;
+      if (!hasZh(child.data)) continue;
+      const newData = [quote, '+', JSON.stringify(child.data), '+', quote].join(
+        ''
+      );
+      const newStart = child.startIndex! + offset;
+      const newEnd = child.endIndex! + 1 + offset;
+      ms.update(newStart, newEnd, newData);
+      flag = true;
+    }
+  });
+  templateNodes.forEach((node) => {
+    const nodeContent = node.value.raw;
+    const doc = safeRun(() =>
+      parseDocument(nodeContent, {
+        withStartIndices: true,
+        withEndIndices: true,
+      })
+    );
+    if (!doc) return;
+    const offset = node.start!;
+    for (const child of traverseHtml2Node(doc)) {
+      if (!DomUtils.isText(child)) continue;
+      if (!hasZh(child.data)) continue;
+      const newData = ['${', JSON.stringify(child.data),'}'].join(
+        ''
+      );
+      const newStart = child.startIndex! + offset;
+      const newEnd = child.endIndex! + 1 + offset;
+      ms.update(newStart, newEnd, newData);
+      flag = true;
+    }
+  });
+  if (!flag) return;
+  return ms.toString();
 };

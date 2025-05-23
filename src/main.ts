@@ -14,7 +14,7 @@ const cliOpts = program
 
 const dir = normalizeDir(cliOpts.dir);
 console.log(pc.yellow(`start`));
-console.log(`dir: `+pc.green(dir))
+console.log(`dir: ` + pc.green(dir));
 
 const i18nMap = new Map<string, string>();
 for await (const filePath of traverseDirectory(dir, (p) => {

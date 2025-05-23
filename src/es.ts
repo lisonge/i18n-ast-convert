@@ -15,6 +15,7 @@ import {
   hasChildNodeZh,
   hasNodeZh,
   hasZh,
+  handleStringInnerHtml,
   skipTraverseTsOpts,
 } from './utils';
 const traverse: typeof _traverse = Reflect.get(_traverse, 'default');
@@ -29,6 +30,14 @@ const innerHandleEsCode = (
     sourceType: 'module',
     plugins: getBabelPlugins(pathOrLang),
   });
+  const splitResultContent = handleStringInnerHtml(content, program);
+  if (splitResultContent && splitResultContent !== content) {
+    return {
+      code: splitResultContent,
+      i18nMap: new Map(),
+      undone: true,
+    };
+  }
   if (!hasNodeZh(program)) return;
   const getContent = (node: t.Node | undefined | null) => {
     if (!node) return '';
@@ -105,7 +114,7 @@ const innerHandleEsCode = (
     const args: string[] = [];
     flatNodes.forEach((v) => {
       const str = getTryNodeString(v);
-      if (str) {
+      if (str && hasZh(str)) {
         usedNodes.add(v);
         values.push(str);
       } else {
