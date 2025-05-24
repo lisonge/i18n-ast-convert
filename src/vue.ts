@@ -207,10 +207,9 @@ const handleVueTemplate = (
 };
 
 export const handleVueFile = async (
-  filePath: string
+  filePath: string,
+  content: string
 ): Promise<HandleCodeResult | undefined> => {
-  const content = await fs.readFile(filePath, 'utf-8');
-  if (!hasZh(content)) return;
   const sfcParseResult = parse(content, { filename: filePath });
   const { script, scriptSetup, template } = sfcParseResult.descriptor;
   const scriptResult = script

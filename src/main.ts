@@ -5,7 +5,7 @@ import path from 'node:path';
 import pc from 'picocolors';
 import { esExtReg, ignoreDirs, vueExtReg } from './config';
 import { handleEsFile } from './es';
-import { addMap, normalizePath, traverseDirectory } from './utils';
+import { addMap, hasZh, normalizePath, traverseDirectory } from './utils';
 import { handleVueFile } from './vue';
 import process from 'node:process';
 
@@ -48,14 +48,16 @@ for await (const filePath of traverseDirectory(dir, (p) => {
   return ignoreDirs.includes(path.basename(p));
 })) {
   if (!filePath.match(esExtReg) && !filePath.match(vueExtReg)) continue;
+  const content = await fs.readFile(filePath, 'utf-8');
+  if (!hasZh(content)) continue;
   visitCount++;
   const relativePath = filePath.substring(dir.length + 1);
   logStatus(relativePath);
   const result = await (async () => {
     if (filePath.match(esExtReg)) {
-      return await handleEsFile(filePath);
+      return await handleEsFile(filePath, content);
     } else if (filePath.match(vueExtReg)) {
-      return await handleVueFile(filePath);
+      return await handleVueFile(filePath, content);
     }
   })().catch((error) => {
     errorList.push({ filePath, error });
@@ -74,10 +76,7 @@ if (errorList.length) {
     [
       errorList
         .map((v) => {
-          return [
-            v.filePath,
-            v.error.stack,
-          ].join('\n');
+          return [v.filePath, v.error.stack].join('\n');
         })
         .join('\n\n'),
       '\n',

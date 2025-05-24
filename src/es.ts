@@ -234,8 +234,8 @@ export const handleEsCode = (
 };
 
 export const handleEsFile = async (
-  filePath: string
+  filePath: string,
+  content: string
 ): Promise<HandleCodeResult | undefined> => {
-  const content = await fs.readFile(filePath, 'utf-8');
   return handleEsCode(content, filePath);
 };
