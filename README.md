@@ -29,4 +29,4 @@ pnpm i
 pnpm start -d your-project-path
 ```
 
-这将自动转换该项目代码并生成 `i18n.json` 文件
+这将自动转换该项目代码并生成 `zh-CN.json` 文件
