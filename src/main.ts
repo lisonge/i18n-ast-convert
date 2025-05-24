@@ -17,6 +17,9 @@ const cliOpts = program
 
 const dir = normalizePath(cliOpts.dir);
 const output = normalizePath(cliOpts.output);
+const errorList: HandleError[] = [];
+let visitCount = 0;
+let doneCount = 0;
 console.log('dir: ' + pc.green(dir));
 const getFrameChar = (() => {
   const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -28,17 +31,18 @@ const logStatus = (p?: string) => {
     [
       [
         `visit: ${pc.green(visitCount)}`,
-        `success: ${pc.green(successCount)}`,
+        `done: ${pc.green(doneCount)}`,
+        errorList.length ? `error: ${pc.red(errorList.length)}` : '',
         `word: ${pc.green(i18nMap.size)}`,
-      ].join(', '),
+      ]
+        .filter(Boolean)
+        .join(', '),
       p ? `${getFrameChar()} ${pc.dim(p)}` : '',
     ]
       .filter(Boolean)
       .join('\n')
   );
 };
-let visitCount = 0;
-let successCount = 0;
 const i18nMap = new Map<string, string>();
 for await (const filePath of traverseDirectory(dir, (p) => {
   return ignoreDirs.includes(path.basename(p));
@@ -53,13 +57,35 @@ for await (const filePath of traverseDirectory(dir, (p) => {
     } else if (filePath.match(vueExtReg)) {
       return await handleVueFile(filePath);
     }
-  })();
+  })().catch((error) => {
+    errorList.push({ filePath, error });
+  });
   if (!result) continue;
   addMap(result.i18nMap, i18nMap);
   await fs.writeFile(filePath, result.code, 'utf-8');
-  successCount++;
+  doneCount++;
 }
 logStatus();
+
+if (errorList.length) {
+  const errorFileName = 'error.log';
+  await fs.writeFile(
+    path.join(dir, errorFileName),
+    [
+      errorList
+        .map((v) => {
+          return [
+            v.filePath,
+            v.error.stack,
+          ].join('\n');
+        })
+        .join('\n\n'),
+      '\n',
+    ],
+    'utf-8'
+  );
+  console.log('error output: ' + pc.red(errorFileName));
+}
 
 if (i18nMap.size === 0) {
   console.log(pc.yellow('no word found'));
@@ -72,5 +98,5 @@ await fs.writeFile(
   JSON.stringify(Object.fromEntries(i18nMap), undefined, 2),
   'utf-8'
 );
-console.log('output:', pc.green(output));
+console.log('word output:', pc.green(output));
 console.log();
