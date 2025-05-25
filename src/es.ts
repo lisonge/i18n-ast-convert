@@ -3,7 +3,6 @@ import type { NodePath } from '@babel/traverse';
 import _traverse from '@babel/traverse';
 import t from '@babel/types';
 import MagicString from 'magic-string';
-import fs from 'node:fs/promises';
 import getKeyFromStr from './key';
 import {
   addMap,
@@ -12,13 +11,35 @@ import {
   getI18nExp,
   getMiniWhitespaceText,
   getTryNodeString,
+  handleStringInnerHtml,
   hasChildNodeZh,
   hasNodeZh,
   hasZh,
-  handleStringInnerHtml,
   skipTraverseTsOpts,
 } from './utils';
 const traverse: typeof _traverse = Reflect.get(_traverse, 'default');
+
+class HandleCache {
+  private map = new Map<string, parser.ParseResult<t.File>>();
+  setIfNotHas(filePath: string, result: parser.ParseResult<t.File>) {
+    if (this.map.has(filePath)) return;
+    this.map.set(filePath, result);
+  }
+  getAndDelete(filePath: string): parser.ParseResult<t.File> | undefined {
+    const r = this.map.get(filePath);
+    if (r) {
+      this.map.delete(filePath);
+      return r;
+    }
+  }
+}
+
+const cache = new HandleCache();
+
+const isFilePath = (pathOrLang: string | undefined): pathOrLang is string => {
+  if (!pathOrLang) return false;
+  return pathOrLang.includes('/') && pathOrLang.includes('.');
+};
 
 const innerHandleEsCode = (
   content: string,
@@ -30,6 +51,9 @@ const innerHandleEsCode = (
     sourceType: 'module',
     plugins: getBabelPlugins(pathOrLang),
   });
+  if (isFilePath(pathOrLang)) {
+    cache.setIfNotHas(pathOrLang, program);
+  }
   const splitResultContent = handleStringInnerHtml(content, program);
   if (splitResultContent && splitResultContent !== content) {
     return {
@@ -218,7 +242,7 @@ const innerHandleEsCode = (
 
 export const handleEsCode = (
   content: string,
-  pathOrLang: string | undefined,
+  pathOrLang: string,
   singleQuote = true
 ): HandleCodeResult | undefined => {
   let r = innerHandleEsCode(content, pathOrLang, singleQuote);
@@ -233,9 +257,31 @@ export const handleEsCode = (
   return r;
 };
 
-export const handleEsFile = async (
+const hasVariable = (
+  program: parser.ParseResult<t.File> | undefined
+): boolean => {
+  if (!program) return false;
+  let flag = Boolean(false);
+  traverse(program, {
+    Program(p) {
+      flag = Boolean(p.scope.getBinding('$t'));
+      p.stop();
+    },
+  });
+  return flag;
+};
+
+export const handleEsFile = (
   filePath: string,
-  content: string
-): Promise<HandleCodeResult | undefined> => {
-  return handleEsCode(content, filePath);
+  content: string,
+  cliOpts: InputCliOptions
+): HandleCodeResult | undefined => {
+  const r = handleEsCode(content, filePath);
+  if (!r) return;
+  if (!cliOpts.t) return r;
+  if (hasVariable(cache.getAndDelete(filePath))) return r;
+  return {
+    ...r,
+    code: [cliOpts.t, r.code].join('\n'),
+  };
 };

@@ -1,6 +1,5 @@
 import type {
   ElementNode,
-  IfBranchNode,
   InterpolationNode,
   Node,
   SourceLocation,
@@ -9,7 +8,6 @@ import type {
 } from '@vue/compiler-core';
 import { NodeTypes } from '@vue/compiler-core';
 import MagicString from 'magic-string';
-import fs from 'node:fs/promises';
 import type { SFCTemplateBlock } from 'vue/compiler-sfc';
 import { parse } from 'vue/compiler-sfc';
 import { handleEsCode } from './es';
@@ -18,9 +16,7 @@ import {
   addMap,
   addParentheses,
   getI18nExp,
-  hasChildNode,
   hasChildNodeZh,
-  hasNodeZh,
   hasZh,
   removeParentheses,
   takeWhile,
@@ -206,17 +202,24 @@ const handleVueTemplate = (
   return r;
 };
 
-export const handleVueFile = async (
+export const handleVueFile = (
   filePath: string,
-  content: string
-): Promise<HandleCodeResult | undefined> => {
+  content: string,
+  cliOpts: InputCliOptions
+): HandleCodeResult | undefined => {
   const sfcParseResult = parse(content, { filename: filePath });
   const { script, scriptSetup, template } = sfcParseResult.descriptor;
   const scriptResult = script
-    ? handleEsCode(script.content, script.lang)
+    ? handleEsCode(
+        script.content,
+        filePath + '.script.' + (script.lang || 'js')
+      )
     : undefined;
   const scriptSetupResult = scriptSetup
-    ? handleEsCode(scriptSetup.content, scriptSetup.lang)
+    ? handleEsCode(
+        scriptSetup.content,
+        filePath + '.scriptSetup.' + (scriptSetup.lang || 'js')
+      )
     : undefined;
   const templateResult = handleVueTemplate(template);
   if (!scriptResult && !scriptSetupResult && !templateResult) return;

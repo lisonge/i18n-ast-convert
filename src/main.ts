@@ -10,8 +10,9 @@ import { handleVueFile } from './vue';
 import process from 'node:process';
 
 const cliOpts = program
-  .requiredOption('-d, --dir <dir>', 'project directory')
-  .option('-o, --output <output>', 'output file name', 'zh-CN.json')
+  .requiredOption('-d,--dir <dir>', 'project directory')
+  .option('-o,--output <output>', 'output file name', 'zh-CN.json')
+  .option('-t <t>', 't import', 'import $t from "@/i18n";')
   .parse()
   .opts<InputCliOptions>();
 
@@ -55,9 +56,9 @@ for await (const filePath of traverseDirectory(dir, (p) => {
   logStatus(relativePath);
   const result = await (async () => {
     if (filePath.match(esExtReg)) {
-      return await handleEsFile(filePath, content);
+      return handleEsFile(filePath, content, cliOpts);
     } else if (filePath.match(vueExtReg)) {
-      return await handleVueFile(filePath, content);
+      return handleVueFile(filePath, content, cliOpts);
     }
   })().catch((error) => {
     errorList.push({ filePath, error });
