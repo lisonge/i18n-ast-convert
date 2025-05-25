@@ -19,22 +19,7 @@ import {
 } from './utils';
 const traverse: typeof _traverse = Reflect.get(_traverse, 'default');
 
-class HandleCache {
-  private map = new Map<string, parser.ParseResult<t.File>>();
-  setIfNotHas(filePath: string, result: parser.ParseResult<t.File>) {
-    if (this.map.has(filePath)) return;
-    this.map.set(filePath, result);
-  }
-  getAndDelete(filePath: string): parser.ParseResult<t.File> | undefined {
-    const r = this.map.get(filePath);
-    if (r) {
-      this.map.delete(filePath);
-      return r;
-    }
-  }
-}
-
-const cache = new HandleCache();
+const cache = new Map<string, parser.ParseResult<t.File>>();
 
 const isFilePath = (pathOrLang: string | undefined): pathOrLang is string => {
   if (!pathOrLang) return false;
@@ -51,8 +36,8 @@ const innerHandleEsCode = (
     sourceType: 'module',
     plugins: getBabelPlugins(pathOrLang),
   });
-  if (isFilePath(pathOrLang)) {
-    cache.setIfNotHas(pathOrLang, program);
+  if (isFilePath(pathOrLang) && !cache.has(pathOrLang)) {
+    cache.set(pathOrLang, program);
   }
   const splitResultContent = handleStringInnerHtml(content, program);
   if (splitResultContent && splitResultContent !== content) {
@@ -243,24 +228,41 @@ const innerHandleEsCode = (
 export const handleEsCode = (
   content: string,
   pathOrLang: string,
-  singleQuote = true
+  singleQuote = true,
+  cliOpts?: InputCliOptions
 ): HandleCodeResult | undefined => {
-  let r = innerHandleEsCode(content, pathOrLang, singleQuote);
-  if (!r) return;
-  while (r?.undone) {
-    const r2 = innerHandleEsCode(r.code, pathOrLang, singleQuote);
-    if (!r2) break;
-    addMap(r.zhMap, r2.zhMap);
-    r = r2;
+  try {
+    let r = innerHandleEsCode(content, pathOrLang, singleQuote);
+    if (!r) return;
+    while (r?.undone) {
+      const r2 = innerHandleEsCode(r.code, pathOrLang, singleQuote);
+      if (!r2) break;
+      addMap(r.zhMap, r2.zhMap);
+      r = r2;
+    }
+    if (!r.zhMap.size) return;
+    const program = cache.get(pathOrLang);
+    if (program && cliOpts?.t && !hasVariable(program)) {
+      const start = program.program.body[0].start ?? 0;
+      return {
+        ...r,
+        code: (start === 0
+          ? [cliOpts.t, r.code]
+          : [
+              r.code.substring(0, start - Number(r.code[start - 1] === '\n')),
+              cliOpts.t,
+              r.code.substring(start),
+            ]
+        ).join('\n'),
+      };
+    }
+    return r;
+  } finally {
+    cache.delete(pathOrLang);
   }
-  if (!r.zhMap.size) return;
-  return r;
 };
 
-const hasVariable = (
-  program: parser.ParseResult<t.File> | undefined
-): boolean => {
-  if (!program) return false;
+const hasVariable = (program: parser.ParseResult<t.File>): boolean => {
   let flag = Boolean(false);
   traverse(program, {
     Program(p) {
@@ -276,12 +278,5 @@ export const handleEsFile = (
   content: string,
   cliOpts: InputCliOptions
 ): HandleCodeResult | undefined => {
-  const r = handleEsCode(content, filePath);
-  if (!r) return;
-  if (!cliOpts.t) return r;
-  if (hasVariable(cache.getAndDelete(filePath))) return r;
-  return {
-    ...r,
-    code: [cliOpts.t, r.code].join('\n'),
-  };
+  return handleEsCode(content, filePath, undefined, cliOpts);
 };

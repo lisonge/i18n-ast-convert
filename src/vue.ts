@@ -212,13 +212,17 @@ export const handleVueFile = (
   const scriptResult = script
     ? handleEsCode(
         script.content,
-        filePath + '.script.' + (script.lang || 'js')
+        filePath + '/script.' + (script.lang || 'js'),
+        undefined,
+        cliOpts
       )
     : undefined;
   const scriptSetupResult = scriptSetup
     ? handleEsCode(
         scriptSetup.content,
-        filePath + '.scriptSetup.' + (scriptSetup.lang || 'js')
+        filePath + '/script.setup.' + (scriptSetup.lang || 'js'),
+        undefined,
+        cliOpts
       )
     : undefined;
   const templateResult = handleVueTemplate(template);
