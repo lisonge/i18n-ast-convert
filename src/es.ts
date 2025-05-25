@@ -34,7 +34,7 @@ const innerHandleEsCode = (
   if (splitResultContent && splitResultContent !== content) {
     return {
       code: splitResultContent,
-      i18nMap: new Map(),
+      zhMap: new Map(),
       undone: true,
     };
   }
@@ -46,7 +46,7 @@ const innerHandleEsCode = (
 
   let undone = Boolean(false);
   const ms = new MagicString(content);
-  const i18nMap = new Map<string, string>();
+  const zhMap = new Map<string, string>();
   const usedNodes = new Set();
   const hasUsedNode = (p: NodePath<t.Node>): boolean => usedNodes.has(p.node);
   const updateNode = (
@@ -55,7 +55,7 @@ const innerHandleEsCode = (
     value: string,
     newValue: string
   ) => {
-    i18nMap.set(key, value);
+    zhMap.set(key, value);
     usedNodes.add(node);
     ms.update(node.start!, node.end!, newValue);
   };
@@ -183,7 +183,7 @@ const innerHandleEsCode = (
       `{${getI18nExp(key, args, singleQuote)}}`,
       t.isJSXText(last) && last.value.at(-1) !== value.at(-1) ? '\x20' : '',
     ].join('');
-    i18nMap.set(key, value);
+    zhMap.set(key, value);
     usedNodes.add(p.node);
     ms.update(
       p.node.children[0].start!,
@@ -211,7 +211,7 @@ const innerHandleEsCode = (
   });
   return {
     code: ms.toString(),
-    i18nMap,
+    zhMap,
     undone,
   };
 };
@@ -226,10 +226,10 @@ export const handleEsCode = (
   while (r?.undone) {
     const r2 = innerHandleEsCode(r.code, pathOrLang, singleQuote);
     if (!r2) break;
-    addMap(r.i18nMap, r2.i18nMap);
+    addMap(r.zhMap, r2.zhMap);
     r = r2;
   }
-  if (!r.i18nMap.size) return;
+  if (!r.zhMap.size) return;
   return r;
 };
 

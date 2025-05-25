@@ -33,7 +33,7 @@ const logStatus = (p?: string) => {
         `visit: ${pc.green(visitCount)}`,
         `done: ${pc.green(doneCount)}`,
         errorList.length ? `error: ${pc.red(errorList.length)}` : '',
-        `word: ${pc.green(i18nMap.size)}`,
+        `word: ${pc.green(zhMap.size)}`,
       ]
         .filter(Boolean)
         .join(', '),
@@ -43,7 +43,7 @@ const logStatus = (p?: string) => {
       .join('\n')
   );
 };
-const i18nMap = new Map<string, string>();
+const zhMap = new Map<string, string>();
 for await (const filePath of traverseDirectory(dir, (p) => {
   return ignoreDirs.includes(path.basename(p));
 })) {
@@ -63,7 +63,7 @@ for await (const filePath of traverseDirectory(dir, (p) => {
     errorList.push({ filePath, error });
   });
   if (!result) continue;
-  addMap(result.i18nMap, i18nMap);
+  addMap(result.zhMap, zhMap);
   await fs.writeFile(filePath, result.code, 'utf-8');
   doneCount++;
 }
@@ -86,7 +86,7 @@ if (errorList.length) {
   console.log('error output: ' + pc.red(errorFileName));
 }
 
-if (i18nMap.size === 0) {
+if (zhMap.size === 0) {
   console.log(pc.yellow('no word found'));
   console.log();
   process.exit();
@@ -94,7 +94,7 @@ if (i18nMap.size === 0) {
 
 await fs.writeFile(
   path.join(dir, output),
-  JSON.stringify(Object.fromEntries(i18nMap), undefined, 2),
+  JSON.stringify(Object.fromEntries(zhMap), undefined, 2),
   'utf-8'
 );
 console.log('word output:', pc.green(output));

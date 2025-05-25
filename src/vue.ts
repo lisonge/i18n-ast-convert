@@ -61,7 +61,7 @@ const innerHandleVueTemplate = (
   const usedNodes = new Set();
   const hasUsedNode = (node: Node): boolean => usedNodes.has(node);
   const ms = new MagicString(template.content);
-  const i18nMap = new Map<string, string>();
+  const zhMap = new Map<string, string>();
   const updateMs = (loc: SourceLocation, value: string) => {
     ms.update(loc.start.offset - offset, loc.end.offset - offset, value);
   };
@@ -71,7 +71,7 @@ const innerHandleVueTemplate = (
     value: string,
     newValue: string
   ) => {
-    i18nMap.set(key, value);
+    zhMap.set(key, value);
     updateMs(node.loc, newValue);
   };
   const handleElementProps = (node: ElementNode) => {
@@ -93,7 +93,7 @@ const innerHandleVueTemplate = (
         const r = handleEsCode(addParentheses(content), 'tsx', singleQuote);
         if (!r) return;
         updateMs(prop.exp.loc, removeParentheses(r.code));
-        addMap(r.i18nMap, i18nMap);
+        addMap(r.zhMap, zhMap);
       }
     });
   };
@@ -128,7 +128,7 @@ const innerHandleVueTemplate = (
       `{{ ${getI18nExp(key, args)} }}`,
       subNodes.at(-1)!.loc.source.at(-1) !== value.at(-1) ? '\x20' : '',
     ].join('');
-    i18nMap.set(key, value);
+    zhMap.set(key, value);
     ms.update(
       subNodes[0].loc.start.offset - offset,
       subNodes.at(-1)!.loc.end.offset - offset,
@@ -170,7 +170,7 @@ const innerHandleVueTemplate = (
     const r = handleEsCode(addParentheses(content), 'tsx');
     if (!r) return;
     updateMs(node.content.loc, removeParentheses(r.code));
-    addMap(r.i18nMap, i18nMap);
+    addMap(r.zhMap, zhMap);
   };
   for (const node of traverseNode(ast)) {
     if (hasUsedNode(node)) continue;
@@ -182,10 +182,10 @@ const innerHandleVueTemplate = (
       handleInterpolationNode(node);
     }
   }
-  if (!i18nMap.size) return;
+  if (!zhMap.size) return;
   return {
     code: ms.toString(),
-    i18nMap,
+    zhMap,
     undone,
   };
 };
@@ -199,10 +199,10 @@ const handleVueTemplate = (
     const newTemplate = parse(r.code).descriptor.template;
     const r2 = innerHandleVueTemplate(newTemplate);
     if (!r2) break;
-    addMap(r.i18nMap, r2.i18nMap);
+    addMap(r.zhMap, r2.zhMap);
     r = r2;
   }
-  if (!r.i18nMap.size) return;
+  if (!r.zhMap.size) return;
   return r;
 };
 
@@ -244,10 +244,10 @@ export const handleVueFile = async (
   }
   return {
     code: ms.toString(),
-    i18nMap: new Map([
-      ...(scriptResult?.i18nMap ?? []),
-      ...(scriptSetupResult?.i18nMap ?? []),
-      ...(templateResult?.i18nMap ?? []),
+    zhMap: new Map([
+      ...(scriptResult?.zhMap ?? []),
+      ...(scriptSetupResult?.zhMap ?? []),
+      ...(templateResult?.zhMap ?? []),
     ]),
   };
 };

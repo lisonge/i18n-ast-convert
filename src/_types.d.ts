@@ -1,6 +1,6 @@
 interface HandleCodeResult {
   code: string;
-  i18nMap: Map<string, string>;
+  zhMap: Map<string, string>;
   undone?: boolean;
 }
 
