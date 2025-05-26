@@ -96,6 +96,9 @@ const innerHandleVueTemplate = (
 
   const handleSerialNode = (subNodes: TemplateChildNode[]) => {
     if (subNodes.length <= 1) return;
+    if (!subNodes.some((v) => v.type === NodeTypes.TEXT && hasZh(v.content))) {
+      return;
+    }
     if (
       subNodes.some(
         (v) =>
