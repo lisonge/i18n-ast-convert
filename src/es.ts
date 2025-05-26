@@ -153,16 +153,16 @@ const innerHandleEsCode = (
     const newValue = `{${getI18nExp(key, singleQuote)}}`;
     updateNode(strNode, key, value, newValue);
   };
-  const handleJSXElement = (p: NodePath<t.JSXElement>) => {
+  const handleJSXElementOrFragment = (p: NodePath<t.JSXElement | t.JSXFragment>) => {
     if (hasUsedNode(p)) return;
-    if (p.node.children.some((v) => !t.isJSXText(v) && hasNodeZh(v))) {
-      undone = true;
-      return;
-    }
     const jsxTextNodes = p.node.children
       .filter((v) => t.isJSXText(v))
       .filter((v) => hasZh(v.value));
     if (!jsxTextNodes.length) return;
+    if (p.node.children.some((v) => !t.isJSXText(v) && hasNodeZh(v))) {
+      undone = true;
+      return;
+    }
     if (p.node.children.length === 1) {
       const n = jsxTextNodes[0];
       const value = n.value.trim();
@@ -218,7 +218,10 @@ const innerHandleEsCode = (
       handleBinaryExpression(p);
     },
     JSXElement(p) {
-      handleJSXElement(p);
+      handleJSXElementOrFragment(p);
+    },
+    JSXFragment(p) {
+      handleJSXElementOrFragment(p);
     },
     JSXAttribute(p) {
       handleJSXAttribute(p);
