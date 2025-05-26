@@ -106,6 +106,19 @@ export const skipTraverseTsOpts: TraverseOptions = {
   TSLiteralType(p) {
     p.skip();
   },
+  CallExpression(p) {
+    // skip console.log
+    if (t.isMemberExpression(p.node.callee)) {
+      const callee = p.node.callee;
+      if (
+        t.isIdentifier(callee.object) &&
+        callee.object.name === 'console' &&
+        t.isIdentifier(callee.property)
+      ) {
+        p.skip();
+      }
+    }
+  },
 };
 
 export const hasNodeZh = (node: t.Node | undefined | null | false): boolean => {
@@ -351,9 +364,7 @@ export const handleStringInnerHtml = (
     for (const child of traverseHtml2Node(doc)) {
       if (!DomUtils.isText(child)) continue;
       if (!hasZh(child.data)) continue;
-      const newData = ['${', JSON.stringify(child.data),'}'].join(
-        ''
-      );
+      const newData = ['${', JSON.stringify(child.data), '}'].join('');
       const newStart = child.startIndex! + offset;
       const newEnd = child.endIndex! + 1 + offset;
       ms.update(newStart, newEnd, newData);
