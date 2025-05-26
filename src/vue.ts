@@ -112,6 +112,7 @@ const innerHandleVueTemplate = (
     const values: string[] = [];
     const args: string[] = [];
     let lastIsNode = false;
+    let stringUsed = false;
     subNodes.forEach((child) => {
       usedNodes.add(child);
       if (child.type === NodeTypes.TEXT) {
@@ -119,7 +120,12 @@ const innerHandleVueTemplate = (
         lastIsNode = false;
       } else if (child.type === NodeTypes.INTERPOLATION) {
         if (lastIsNode) {
-          args[args.length - 1] += ` + String(${child.content.loc.source})`;
+          if (!stringUsed) {
+            args[args.length - 1] += ` + String(${child.content.loc.source})`;
+            stringUsed = true;
+          } else {
+            args[args.length - 1] += ` + ${child.content.loc.source}`;
+          }
         } else {
           values.push(`{${args.length}}`);
           args.push(child.content.loc.source);

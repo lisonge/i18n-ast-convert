@@ -130,7 +130,7 @@ const innerHandleEsCode = (
         lastIsNode = false;
       } else {
         if (lastIsNode) {
-          args[args.length - 1] += ` + ` + getContent(v);
+          args[args.length - 1] += ` + ${getContent(v)}`;
         } else {
           values.push(`{${args.length}}`);
           args.push(getContent(v));
