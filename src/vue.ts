@@ -111,13 +111,20 @@ const innerHandleVueTemplate = (
     }
     const values: string[] = [];
     const args: string[] = [];
+    let lastIsNode = false;
     subNodes.forEach((child) => {
       usedNodes.add(child);
       if (child.type === NodeTypes.TEXT) {
         values.push(child.content);
+        lastIsNode = false;
       } else if (child.type === NodeTypes.INTERPOLATION) {
-        values.push(`{${args.length}}`);
-        args.push(child.content.loc.source);
+        if (lastIsNode) {
+          args[args.length - 1] += ` + String(${child.content.loc.source})`;
+        } else {
+          values.push(`{${args.length}}`);
+          args.push(child.content.loc.source);
+        }
+        lastIsNode = true;
       }
     });
     const value = values.join('').trim();

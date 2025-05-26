@@ -121,14 +121,21 @@ const innerHandleEsCode = (
     usedBinaryExpressions.forEach((v) => usedNodes.add(v));
     const values: string[] = [];
     const args: string[] = [];
+    let lastIsNode = false;
     flatNodes.forEach((v) => {
       const str = getTryNodeString(v);
       if (str && hasZh(str)) {
         usedNodes.add(v);
         values.push(str);
+        lastIsNode = false;
       } else {
-        values.push(`{${args.length}}`);
-        args.push(getContent(v));
+        if (lastIsNode) {
+          args[args.length - 1] += ` + ` + getContent(v);
+        } else {
+          values.push(`{${args.length}}`);
+          args.push(getContent(v));
+        }
+        lastIsNode = true;
       }
     });
     const value = values.join('').trim();
