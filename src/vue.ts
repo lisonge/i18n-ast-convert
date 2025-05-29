@@ -152,10 +152,8 @@ const innerHandleVueTemplate = (
     if (node.children.length <= 1) return;
     for (let i = 0; i < node.children.length; ) {
       const subNodes = takeWhile(
-        node.children,
-        (v) =>
-          (v.type === NodeTypes.TEXT && hasZh(v.content)) ||
-          v.type === NodeTypes.INTERPOLATION
+        node.children.slice(i),
+        (v) => v.type === NodeTypes.TEXT || v.type === NodeTypes.INTERPOLATION
       );
       if (subNodes.length) {
         handleSerialNode(subNodes);
