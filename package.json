@@ -6,6 +6,10 @@
   "bin": {
     "i18n-ast-convert": "./dist/main.js"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "start": "tsx src/main.ts",
     "build": "esbuild src/**/*.ts --sourcemap --outdir=dist --format=esm --target=esnext",
