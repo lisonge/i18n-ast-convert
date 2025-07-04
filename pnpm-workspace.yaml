@@ -2,3 +2,4 @@
 publicHoistPattern:
   - '@vue/*'
   - 'domhandler'
+  - 'esbuild'

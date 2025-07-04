@@ -9,44 +9,45 @@ importers:
   .:
     dependencies:
       '@babel/parser':
-        specifier: 7.27.2
+        specifier: ^7.27.2
         version: 7.27.2
       '@babel/traverse':
-        specifier: 7.27.1
+        specifier: ^7.27.1
         version: 7.27.1
       '@babel/types':
-        specifier: 7.27.1
+        specifier: ^7.27.1
         version: 7.27.1
-      '@types/babel__traverse':
-        specifier: 7.20.7
-        version: 7.20.7
-      '@types/node':
-        specifier: 22.15.19
-        version: 22.15.19
       commander:
-        specifier: 14.0.0
+        specifier: ^14.0.0
         version: 14.0.0
       htmlparser2:
-        specifier: 10.0.0
+        specifier: ^10.0.0
         version: 10.0.0
       log-update:
-        specifier: 6.1.0
+        specifier: ^6.1.0
         version: 6.1.0
       magic-string:
-        specifier: 0.30.17
+        specifier: ^0.30.17
         version: 0.30.17
       picocolors:
-        specifier: 1.1.1
+        specifier: ^1.1.1
         version: 1.1.1
+      vue:
+        specifier: ^3.5.14
+        version: 3.5.14(typescript@5.8.3)
+    devDependencies:
+      '@types/babel__traverse':
+        specifier: ^7.20.7
+        version: 7.20.7
+      '@types/node':
+        specifier: ^22.15.19
+        version: 22.15.19
       tsx:
-        specifier: 4.19.4
+        specifier: ^4.19.4
         version: 4.19.4
       typescript:
-        specifier: 5.8.3
+        specifier: ^5.8.3
         version: 5.8.3
-      vue:
-        specifier: 3.5.14
-        version: 3.5.14(typescript@5.8.3)
 
 packages:
 
