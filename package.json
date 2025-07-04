@@ -23,14 +23,15 @@
     "@babel/types": "^7.27.1",
     "commander": "^14.0.0",
     "htmlparser2": "^10.0.0",
+    "ignore": "^7.0.5",
     "log-update": "^6.1.0",
     "magic-string": "^0.30.17",
     "picocolors": "^1.1.1",
     "vue": "^3.5.14"
   },
   "devDependencies": {
-    "@types/node": "^22.15.19",
     "@types/babel__traverse": "^7.20.7",
+    "@types/node": "^22.15.19",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   },

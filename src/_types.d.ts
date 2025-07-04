@@ -8,6 +8,7 @@ interface InputCliOptions {
   dir: string;
   output: string;
   t: string;
+  ignore: string[];
 }
 
 interface HandleError {

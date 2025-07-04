@@ -3,21 +3,34 @@ import logUpdate from 'log-update';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import pc from 'picocolors';
-import { esExtReg, ignoreDirs, vueExtReg } from './config';
+import { esExtReg, vueExtReg } from './config';
 import { handleEsFile } from './es';
 import { addMap, hasZh, normalizePath, traverseDirectory } from './utils';
 import { handleVueFile } from './vue';
 import process from 'node:process';
+import ignore from 'ignore';
 
 const cliOpts = program
   .option('-d,--dir <dir>', 'project directory', process.cwd())
   .option('-o,--output <output>', 'output file name', 'zh-CN.json')
   .option('-t <t>', 't import', `import $t from '@/i18n';`)
+  .option('-i, --ignore <ignore...>', 'ignore paths', [
+    '.git',
+    'node_modules',
+    'dist',
+    'build',
+    'public',
+  ])
   .parse()
   .opts<InputCliOptions>();
 
 const dir = normalizePath(cliOpts.dir);
 const output = normalizePath(cliOpts.output);
+const ig = ignore().add(
+  Array.from(
+    new Set(cliOpts.ignore.filter(Boolean).concat('node_modules', '.git'))
+  )
+);
 const errorList: HandleError[] = [];
 let visitCount = 0;
 let doneCount = 0;
@@ -45,10 +58,11 @@ const logStatus = (p?: string) => {
   );
 };
 const zhMap = new Map<string, string>();
-for await (const filePath of traverseDirectory(dir, (p) => {
-  return ignoreDirs.includes(path.basename(p));
-})) {
+for await (const filePath of traverseDirectory(dir, (p) =>
+  ig.ignores(path.relative(dir, p))
+)) {
   if (!filePath.match(esExtReg) && !filePath.match(vueExtReg)) continue;
+  if (ig.ignores(path.relative(dir, filePath))) continue;
   const content = await fs.readFile(filePath, 'utf-8');
   if (!hasZh(content)) continue;
   visitCount++;

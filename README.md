@@ -37,7 +37,8 @@ pnpm exec i18n-ast-convert
 # args:
 # -d,--dir <dir> | project directory | process.cwd()
 # -o,--output <output> | output file name | zh-CN.json
-# -t <t> | t import | import $t from '@/i18n';
+# -t <t> | t import | 'import $t from '@/i18n';'
+# -i, --ignore <ignore...> | ignore paths | .git node_modules dist build public
 ```
 
 这将自动转换当前项目代码并生成 `zh-CN.json` 文件
