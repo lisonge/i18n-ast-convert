@@ -27,15 +27,17 @@
 安装
 
 ```shell
-git clone https://github.com/lisonge/i18n-ast-convert.git
-cd i18n-ast-convert
-pnpm i
+pnpm add i18n-ast-convert
 ```
 
 运行
 
 ```shell
-pnpm start -d your-project-path
+pnpm exec i18n-ast-convert
+# args:
+# -d,--dir <dir> | project directory | process.cwd()
+# -o,--output <output> | output file name | zh-CN.json
+# -t <t> | t import | import $t from '@/i18n';
 ```
 
-这将自动转换该项目代码并生成 `zh-CN.json` 文件
+这将自动转换当前项目代码并生成 `zh-CN.json` 文件
