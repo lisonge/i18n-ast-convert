@@ -23,5 +23,6 @@ coverage
 yarn.lock
 package-lock.json
 
+bin
 dist
 test
