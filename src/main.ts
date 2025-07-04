@@ -10,7 +10,7 @@ import { handleVueFile } from './vue';
 import process from 'node:process';
 
 const cliOpts = program
-  .requiredOption('-d,--dir <dir>', 'project directory')
+  .option('-d,--dir <dir>', 'project directory', process.cwd())
   .option('-o,--output <output>', 'output file name', 'zh-CN.json')
   .option('-t <t>', 't import', `import $t from '@/i18n';`)
   .parse()
