@@ -1,11 +1,12 @@
 {
   "name": "i18n-ast-convert",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "main": "./dist/main.js",
   "bin": {
     "i18n-ast-convert": "./dist/main.js"
   },
+  "homepage": "https://github.com/lisonge/i18n-ast-convert",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
