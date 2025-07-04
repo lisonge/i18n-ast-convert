@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "tsx src/main.ts",
-    "build": "esbuild src/**/*.ts --sourcemap --outdir=dist --format=esm --target=esnext"
+    "build": "esbuild src/**/*.ts --sourcemap --outdir=dist --format=esm --target=esnext",
+    "prepublish": "pnpm build"
   },
   "author": "lisonge",
   "license": "MIT",
