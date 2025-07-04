@@ -1,6 +1,6 @@
 {
   "name": "i18n-ast-convert",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "bin": {
     "i18n-ast-convert": "./bin/i18n-ast-convert.mjs"
