@@ -1,6 +1,6 @@
 {
   "name": "i18n-ast-convert",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "./dist/main.js",
   "bin": {
